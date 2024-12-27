@@ -1,0 +1,72 @@
+#include <iostream>
+#include <vector>
+#include <climits>
+using namespace std;
+
+struct TreeNode {
+    int val;
+    TreeNode* left;
+    TreeNode* right;
+    TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+};
+
+class Solution {
+public:
+    int maxPathSum(TreeNode* root) {
+        int maxSum = INT_MIN;
+        maxGain(root, maxSum);
+        return maxSum;
+    }
+
+private:
+    int maxGain(TreeNode* node, int& maxSum) {
+        if (!node) return 0;
+
+        int leftGain = max(maxGain(node->left, maxSum), 0);
+        int rightGain = max(maxGain(node->right, maxSum), 0);
+
+        int currentPathSum = node->val + leftGain + rightGain;
+
+        maxSum = max(maxSum, currentPathSum);
+
+        return node->val + max(leftGain, rightGain);
+    }
+};
+
+TreeNode* buildTree(const vector<int>& values) {
+    if (values.empty() || values[0] == -1) return NULL;
+
+    TreeNode* root = new TreeNode(values[0]);
+    vector<TreeNode*> nodes = {root};
+    int index = 1;
+
+    for (TreeNode* node : nodes) {
+        if (!node) continue;
+
+        if (index < values.size() && values[index] != -1) {
+            node->left = new TreeNode(values[index]);
+            nodes.push_back(node->left);
+        }
+        index++;
+
+        if (index < values.size() && values[index] != -1) {
+            node->right = new TreeNode(values[index]);
+            nodes.push_back(node->right);
+        }
+        index++;
+    }
+
+    return root;
+}
+
+int main() {
+    vector<int> values = {1, 2, 3}; 
+
+    TreeNode* root = buildTree(values);
+    Solution sol;
+
+    cout << "Maximum Path Sum: " << sol.maxPathSum(root) << endl;
+
+    return 0;
+}
+
