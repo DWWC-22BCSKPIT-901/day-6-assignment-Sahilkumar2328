@@ -1,0 +1,45 @@
+#include <iostream>
+#include <vector>
+#include <unordered_map>
+using namespace std;
+
+class Solution {
+public:
+    int countPalindromePaths(vector<int>& parent, string s) {
+        int n = parent.size();
+        vector<vector<int>> tree(n);
+        for (int i = 1; i < n; i++) {
+            tree[parent[i]].push_back(i);
+        }
+
+        unordered_map<int, int> freqMap;
+        freqMap[0] = 1;
+        int result = 0;
+
+        function<void(int, int)> dfs = [&](int node, int mask) {
+            mask ^= (1 << (s[node] - 'a'));
+            result += freqMap[mask];
+            for (int i = 0; i < 26; i++) {
+                result += freqMap[mask ^ (1 << i)];
+            }
+            freqMap[mask]++;
+            for (int child : tree[node]) {
+                dfs(child, mask);
+            }
+            freqMap[mask]--;
+        };
+
+        dfs(0, 0);
+        return result;
+    }
+};
+
+int main() {
+    vector<int> parent = {-1, 0, 0, 1, 1, 2};
+    string s = "acaabc";
+
+    Solution sol;
+    cout << sol.countPalindromePaths(parent, s) << endl;
+
+    return 0;
+}
