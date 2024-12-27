@@ -1,0 +1,74 @@
+#include <iostream>
+#include <queue>
+#include <vector>
+using namespace std;
+
+struct TreeNode {
+    int val;
+    TreeNode* left;
+    TreeNode* right;
+    TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+};
+
+TreeNode* buildTree(const vector<int>& values) {
+    if (values.empty() || values[0] == -1) return NULL;
+
+    TreeNode* root = new TreeNode(values[0]);
+    queue<TreeNode*> q;
+    q.push(root);
+
+    int i = 1;
+    while (!q.empty() && i < values.size()) {
+        TreeNode* node = q.front();
+        q.pop();
+
+        if (values[i] != -1) {
+            node->left = new TreeNode(values[i]);
+            q.push(node->left);
+        }
+        i++;
+
+        if (i < values.size() && values[i] != -1) {
+            node->right = new TreeNode(values[i]);
+            q.push(node->right);
+        }
+        i++;
+    }
+    return root;
+}
+
+int getHeight(TreeNode* node) {
+    int h = 0;
+    while (node) {
+        h++;
+        node = node->left;
+    }
+    return h;
+}
+
+int countNodes(TreeNode* root) {
+    if (!root) return 0;
+    int lh = getHeight(root->left);
+    int rh = getHeight(root->right);
+    if (lh == rh)
+        return (1 << lh) + countNodes(root->right);
+    else
+        return (1 << rh) + countNodes(root->left);
+}
+
+int main() {
+    int n;
+    cout << "Enter the number of elements in the tree: ";
+    cin >> n;
+
+    vector<int> values(n);
+    cout << "Enter the tree values in level order (-1 for NULL): ";
+    for (int i = 0; i < n; i++) {
+        cin >> values[i];
+    }
+
+    TreeNode* root = buildTree(values);
+    cout << "Total nodes: " << countNodes(root) << endl;
+
+    return 0;
+}
