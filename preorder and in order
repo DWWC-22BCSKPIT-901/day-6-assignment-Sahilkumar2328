@@ -1,0 +1,69 @@
+#include <iostream>
+#include <unordered_map>
+#include <vector>
+using namespace std;
+
+struct TreeNode {
+    int val;
+    TreeNode* left;
+    TreeNode* right;
+    TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+};
+
+TreeNode* buildTreeHelper(vector<int>& preorder, int preStart, int preEnd,
+                          vector<int>& inorder, int inStart, int inEnd,
+                          unordered_map<int, int>& inMap) {
+    if (preStart > preEnd || inStart > inEnd) return NULL;
+
+    int rootVal = preorder[preStart];
+    TreeNode* root = new TreeNode(rootVal);
+
+    int inRoot = inMap[rootVal];
+    int numsLeft = inRoot - inStart;
+
+    root->left = buildTreeHelper(preorder, preStart + 1, preStart + numsLeft,
+                                 inorder, inStart, inRoot - 1, inMap);
+    root->right = buildTreeHelper(preorder, preStart + numsLeft + 1, preEnd,
+                                  inorder, inRoot + 1, inEnd, inMap);
+
+    return root;
+}
+
+TreeNode* buildTree(vector<int>& preorder, vector<int>& inorder) {
+    unordered_map<int, int> inMap;
+    for (int i = 0; i < inorder.size(); i++) {
+        inMap[inorder[i]] = i;
+    }
+    return buildTreeHelper(preorder, 0, preorder.size() - 1, inorder, 0, inorder.size() - 1, inMap);
+}
+
+void printTree(TreeNode* root) {
+    if (!root) {
+        cout << "null ";
+        return;
+    }
+    cout << root->val << " ";
+    printTree(root->left);
+    printTree(root->right);
+}
+
+int main() {
+    int n;
+    cout << "Enter the number of nodes: ";
+    cin >> n;
+
+    vector<int> preorder(n), inorder(n);
+    cout << "Enter preorder traversal: ";
+    for (int i = 0; i < n; i++) cin >> preorder[i];
+
+    cout << "Enter inorder traversal: ";
+    for (int i = 0; i < n; i++) cin >> inorder[i];
+
+    TreeNode* root = buildTree(preorder, inorder);
+
+    cout << "Tree in level order: ";
+    printTree(root);
+    cout << endl;
+
+    return 0;
+}
