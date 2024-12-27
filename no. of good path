@@ -1,0 +1,87 @@
+#include <iostream>
+#include <vector>
+#include <unordered_map>
+#include <algorithm>
+using namespace std;
+
+class DSU {
+public:
+    DSU(int n) {
+        parent.resize(n);
+        size.resize(n, 1);
+        for (int i = 0; i < n; ++i) {
+            parent[i] = i;
+        }
+    }
+
+    int find(int x) {
+        if (x != parent[x]) {
+            parent[x] = find(parent[x]);
+        }
+        return parent[x];
+    }
+
+    void unionSets(int x, int y) {
+        int rootX = find(x);
+        int rootY = find(y);
+        if (rootX != rootY) {
+            if (size[rootX] > size[rootY]) {
+                parent[rootY] = rootX;
+                size[rootX] += size[rootY];
+            } else {
+                parent[rootX] = rootY;
+                size[rootY] += size[rootX];
+            }
+        }
+    }
+
+    int getSize(int x) {
+        return size[find(x)];
+    }
+
+private:
+    vector<int> parent, size;
+};
+
+class Solution {
+public:
+    int countGoodPaths(vector<int>& vals, vector<vector<int>>& edges) {
+        int n = vals.size();
+        DSU dsu(n);
+        vector<vector<int>> adj(n);
+        for (auto& edge : edges) {
+            adj[edge[0]].push_back(edge[1]);
+            adj[edge[1]].push_back(edge[0]);
+        }
+
+        vector<pair<int, int>> nodes(n);
+        for (int i = 0; i < n; ++i) {
+            nodes[i] = {vals[i], i};
+        }
+        sort(nodes.begin(), nodes.end());
+
+        long long result = 0;
+        unordered_map<int, long long> countMap;
+
+        for (auto& [value, node] : nodes) {
+            countMap[dsu.find(node)]++;
+            for (int neighbor : adj[node]) {
+                if (vals[neighbor] <= value) {
+                    dsu.unionSets(node, neighbor);
+                }
+            }
+            result += countMap[dsu.find(node)] - 1;
+        }
+
+        return result;
+    }
+};
+
+int main() {
+    Solution sol;
+    vector<int> vals = {1, 3, 2, 1, 3};
+    vector<vector<int>> edges = {{0, 1}, {0, 2}, {2, 3}, {2, 4}};
+    cout << sol.countGoodPaths(vals, edges) << endl;
+
+    return 0;
+}
